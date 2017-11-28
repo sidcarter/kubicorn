@@ -12,65 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package azure
+package digitalocean
 
 import (
 	"fmt"
 
 	"github.com/kris-nova/kubicorn/apis/cluster"
 	"github.com/kris-nova/kubicorn/cutil/kubeadm"
-	"k8s.io/kube-deploy/cluster-api/api/cluster/v1alpha1"
 	"github.com/kris-nova/kubicorn/apis"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-//// NewUbuntuCluster creates a basic Azure cluster profile, to bootstrap Kubernetes.
-//func NewUbuntuClusterA(name string) apis.KubicornCluster {
-//
-//
-//	cluster := v1alpha1.Cluster{
-//
-//	}
-//
-//
-//	return &cluster
-//
-//}
-
-// NewUbuntuCluster creates a basic Azure cluster profile, to bootstrap Kubernetes.
-func NewUbuntuClusterA(name string) apis.KubicornCluster {
 
 
-	cluster := v1alpha1.Cluster{
-
-		ObjectMeta: metav1.ObjectMeta{
-			// ------------------------------------------------------------------
-			Name: name,
-		},
-		TypeMeta: metav1.TypeMeta{
-			// ------------------------------------------------------------------
-		},
-		Spec: v1alpha1.ClusterSpec{
-			// ------------------------------------------------------------------
-			ProviderConfig: "",
-			ClusterNetwork: v1alpha1.ClusterNetworkingConfig{
-
-			},
-		},
-	}
-
-
-	return &cluster
-
-}
-
-
-// NewUbuntuCluster creates a basic Azure cluster profile, to bootstrap Kubernetes.
-func NewUbuntuCluster(name string) *cluster.Cluster {
+// NewUbuntuCluster creates a basic Digitalocean cluster profile, to bootstrap Kubernetes.
+func NewUbuntuCluster(name string) apis.KubicornCluster {
 	return &cluster.Cluster{
 		Name:     name,
-		Cloud:    cluster.CloudAzure,
-		Location: "eastus",
+		Cloud:    cluster.CloudDigitalOcean,
+		Location: "sfo2",
 		SSH: &cluster.SSH{
 			PublicKeyPath: "~/.ssh/id_rsa.pub",
 			User:          "root",
@@ -85,12 +44,15 @@ func NewUbuntuCluster(name string) *cluster.Cluster {
 		},
 		ServerPools: []*cluster.ServerPool{
 			{
-				Type:             cluster.ServerPoolTypeMaster,
-				Name:             fmt.Sprintf("%s-master", name),
-				MaxCount:         1,
-				Image:            "UbuntuServer",
-				Size:             "Standard_DS3_v2 ",
-				BootstrapScripts: []string{},
+				Type:     cluster.ServerPoolTypeMaster,
+				Name:     fmt.Sprintf("%s-master", name),
+				MaxCount: 1,
+				Image:    "ubuntu-16-04-x64",
+				Size:     "2gb",
+				BootstrapScripts: []string{
+					"bootstrap/vpn/openvpnMaster.sh",
+					"bootstrap/digitalocean_k8s_ubuntu_16.04_master.sh",
+				},
 				Firewalls: []*cluster.Firewall{
 					{
 						Name: fmt.Sprintf("%s-master", name),
@@ -110,6 +72,11 @@ func NewUbuntuCluster(name string) *cluster.Cluster {
 								IngressSource:   "0.0.0.0/0",
 								IngressProtocol: "udp",
 							},
+							{
+								IngressToPort:   "all",
+								IngressSource:   fmt.Sprintf("%s-node", name),
+								IngressProtocol: "tcp",
+							},
 						},
 						EgressRules: []*cluster.EgressRule{
 							{
@@ -127,12 +94,15 @@ func NewUbuntuCluster(name string) *cluster.Cluster {
 				},
 			},
 			{
-				Type:             cluster.ServerPoolTypeNode,
-				Name:             fmt.Sprintf("%s-node", name),
-				MaxCount:         1,
-				Image:            "UbuntuServer",
-				Size:             "Standard_DS3_v2 ",
-				BootstrapScripts: []string{},
+				Type:     cluster.ServerPoolTypeNode,
+				Name:     fmt.Sprintf("%s-node", name),
+				MaxCount: 2,
+				Image:    "ubuntu-16-04-x64",
+				Size:     "2gb",
+				BootstrapScripts: []string{
+					"bootstrap/vpn/openvpnNode.sh",
+					"bootstrap/digitalocean_k8s_ubuntu_16.04_node.sh",
+				},
 				Firewalls: []*cluster.Firewall{
 					{
 						Name: fmt.Sprintf("%s-node", name),
@@ -146,6 +116,11 @@ func NewUbuntuCluster(name string) *cluster.Cluster {
 								IngressToPort:   "1194",
 								IngressSource:   "0.0.0.0/0",
 								IngressProtocol: "udp",
+							},
+							{
+								IngressToPort:   "all",
+								IngressSource:   fmt.Sprintf("%s-master", name),
+								IngressProtocol: "tcp",
 							},
 						},
 						EgressRules: []*cluster.EgressRule{

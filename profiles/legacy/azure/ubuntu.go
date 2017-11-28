@@ -12,23 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package digitalocean
+package azure
 
 import (
 	"fmt"
 
 	"github.com/kris-nova/kubicorn/apis/cluster"
 	"github.com/kris-nova/kubicorn/cutil/kubeadm"
+	"github.com/kris-nova/kubicorn/apis"
 )
 
 
-
-// NewUbuntuCluster creates a basic Digitalocean cluster profile, to bootstrap Kubernetes.
-func NewUbuntuCluster(name string) *cluster.Cluster {
+// NewUbuntuCluster creates a basic Azure cluster profile, to bootstrap Kubernetes.
+func NewUbuntuCluster(name string) apis.KubicornCluster {
 	return &cluster.Cluster{
 		Name:     name,
-		Cloud:    cluster.CloudDigitalOcean,
-		Location: "sfo2",
+		Cloud:    cluster.CloudAzure,
+		Location: "eastus",
 		SSH: &cluster.SSH{
 			PublicKeyPath: "~/.ssh/id_rsa.pub",
 			User:          "root",
@@ -43,15 +43,12 @@ func NewUbuntuCluster(name string) *cluster.Cluster {
 		},
 		ServerPools: []*cluster.ServerPool{
 			{
-				Type:     cluster.ServerPoolTypeMaster,
-				Name:     fmt.Sprintf("%s-master", name),
-				MaxCount: 1,
-				Image:    "ubuntu-16-04-x64",
-				Size:     "2gb",
-				BootstrapScripts: []string{
-					"bootstrap/vpn/openvpnMaster.sh",
-					"bootstrap/digitalocean_k8s_ubuntu_16.04_master.sh",
-				},
+				Type:             cluster.ServerPoolTypeMaster,
+				Name:             fmt.Sprintf("%s-master", name),
+				MaxCount:         1,
+				Image:            "UbuntuServer",
+				Size:             "Standard_DS3_v2 ",
+				BootstrapScripts: []string{},
 				Firewalls: []*cluster.Firewall{
 					{
 						Name: fmt.Sprintf("%s-master", name),
@@ -71,11 +68,6 @@ func NewUbuntuCluster(name string) *cluster.Cluster {
 								IngressSource:   "0.0.0.0/0",
 								IngressProtocol: "udp",
 							},
-							{
-								IngressToPort:   "all",
-								IngressSource:   fmt.Sprintf("%s-node", name),
-								IngressProtocol: "tcp",
-							},
 						},
 						EgressRules: []*cluster.EgressRule{
 							{
@@ -93,15 +85,12 @@ func NewUbuntuCluster(name string) *cluster.Cluster {
 				},
 			},
 			{
-				Type:     cluster.ServerPoolTypeNode,
-				Name:     fmt.Sprintf("%s-node", name),
-				MaxCount: 2,
-				Image:    "ubuntu-16-04-x64",
-				Size:     "2gb",
-				BootstrapScripts: []string{
-					"bootstrap/vpn/openvpnNode.sh",
-					"bootstrap/digitalocean_k8s_ubuntu_16.04_node.sh",
-				},
+				Type:             cluster.ServerPoolTypeNode,
+				Name:             fmt.Sprintf("%s-node", name),
+				MaxCount:         1,
+				Image:            "UbuntuServer",
+				Size:             "Standard_DS3_v2 ",
+				BootstrapScripts: []string{},
 				Firewalls: []*cluster.Firewall{
 					{
 						Name: fmt.Sprintf("%s-node", name),
@@ -115,11 +104,6 @@ func NewUbuntuCluster(name string) *cluster.Cluster {
 								IngressToPort:   "1194",
 								IngressSource:   "0.0.0.0/0",
 								IngressProtocol: "udp",
-							},
-							{
-								IngressToPort:   "all",
-								IngressSource:   fmt.Sprintf("%s-master", name),
-								IngressProtocol: "tcp",
 							},
 						},
 						EgressRules: []*cluster.EgressRule{
