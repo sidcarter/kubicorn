@@ -6,9 +6,9 @@ Bo Ingram <boingram6@gmail.com>
 Brad Pinter <brad.pinter@gmail.com>
 Carolyn Van Slyck <me@carolynvanslyck.com>
 Darron Froese <dfroese@salesforce.com>
-ellenkorbes <ellenkorbes@gmail.com>
 Ellen Körbes <ellenkorbes@gmail.com>
 Eric Hole <eric.hole@gmail.com>
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -24,6 +24,8 @@ fabriziopandini <fabrizio.pandini@gmail.com>
 =======
 fabriziopandini <fabrizio.pandini@gmail.com>
 >>>>>>> dep update
+=======
+>>>>>>> omfg its compiling
 Gar Morley <garmorley@gmail.com>
 Igor Vuk <parcijala@gmail.com>
 Jacopo Nardiello <jacopo@sighup.io>
@@ -46,6 +48,7 @@ Martin Etmajer <martin@etmajer.com>
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> omg this is a huge refactor for the API
 matyix <janos.matyas@gmail.com>
@@ -71,6 +74,10 @@ Michael Hausenblas <michael.hausenblas@gmail.com>
 Michael Zamot <michael@zamot.io>
 name <email@email.com>
 >>>>>>> dep update
+=======
+Michael Hausenblas <michael.hausenblas@gmail.com>
+Michael Zamot <michael@zamot.io>
+>>>>>>> omfg its compiling
 Nolan Brubaker <nolan@heptio.com>
 Nyah Check <check.nyah@gmail.com>
 Paul Czarkowski <username.taken@gmail.com>
@@ -78,8 +85,13 @@ Peter Smeets <p.e.smeets@gmail.com>
 Prateek Gogia <pgogia@varmour.com>
 Prateek Gogia <prateekgogia@hotmail.com>
 Robert Bailey <robertbailey@google.com>
-robjloranger <robjloranger@protonmail.com>
 S.Çağlar Onur <caglar@digitalocean.com>
 Steven Klassen <sklassen@gmail.com>
 Ted Wood <ted@xy0.org>
 William Stewart <zoidbergwill@gmail.com>
+ellenkorbes <ellenkorbes@gmail.com>
+fabriziopandini <fabrizio.pandini@gmail.com>
+matyix <janos.matyas@gmail.com>
+matyix <lalyos@yahoo.com>
+name <email@email.com>
+robjloranger <robjloranger@protonmail.com>
