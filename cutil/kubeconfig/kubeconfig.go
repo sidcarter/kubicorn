@@ -32,6 +32,15 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+func KubeConfigPath() (string, error){
+	localDir := fmt.Sprintf("%s/.kube", local.Home())
+	localPath, err := getKubeConfigPath(localDir)
+	if err != nil {
+		return "", err
+	}
+	return localPath, nil
+}
+
 func GetConfig(existing *cluster.Cluster) error {
 	user := existing.SSH.User
 	pubKeyPath := local.Expand(existing.SSH.PublicKeyPath)
@@ -39,14 +48,13 @@ func GetConfig(existing *cluster.Cluster) error {
 	if existing.SSH.Port == "" {
 		existing.SSH.Port = "22"
 	}
-
-	address := fmt.Sprintf("%s:%s", existing.KubernetesAPI.Endpoint, existing.SSH.Port)
-	logger.Info("Connecting to control plane [%s]", address)
-	localDir := fmt.Sprintf("%s/.kube", local.Home())
-	localPath, err := getKubeConfigPath(localDir)
+	localPath, err := KubeConfigPath()
 	if err != nil {
 		return err
 	}
+	address := fmt.Sprintf("%s:%s", existing.KubernetesAPI.Endpoint, existing.SSH.Port)
+	logger.Info("Connecting to control plane [%s]", address)
+
 	sshConfig := &ssh.ClientConfig{
 		User:            user,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
