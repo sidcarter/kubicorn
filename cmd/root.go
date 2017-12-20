@@ -106,6 +106,7 @@ func addCommands() {
 	RootCmd.AddCommand(CreateCmd())
 	RootCmd.AddCommand(DeleteCmd())
 	RootCmd.AddCommand(EditCmd())
+	RootCmd.AddCommand(ExplainCmd())
 	RootCmd.AddCommand(GetConfigCmd())
 	RootCmd.AddCommand(ImageCmd())
 	RootCmd.AddCommand(ListCmd())

@@ -145,6 +145,7 @@ func RunApply(options *ApplyOptions) error {
 		}
 	}
 
+	logger.Info("Init Cluster")
 	cluster, err = initapi.InitCluster(cluster)
 	if err != nil {
 		return err

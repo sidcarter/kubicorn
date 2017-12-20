@@ -15,13 +15,15 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 
-	"github.com/kris-nova/kubicorn/cutil/agent"
+	"github.com/kris-nova/kubicorn/apis/cluster"
+	"github.com/kris-nova/kubicorn/cutil"
 	"github.com/kris-nova/kubicorn/cutil/initapi"
-	"github.com/kris-nova/kubicorn/cutil/kubeconfig"
+
 	"github.com/kris-nova/kubicorn/cutil/logger"
 	"github.com/kris-nova/kubicorn/state"
 	"github.com/kris-nova/kubicorn/state/fs"
@@ -31,55 +33,56 @@ import (
 	gg "github.com/tcnksm/go-gitconfig"
 )
 
-type GetConfigOptions struct {
+type ExplainOptions struct {
 	Options
+	Profile string
+	Output  string
 }
 
-var cro = &GetConfigOptions{}
+type OutputData struct {
+	Actual   *cluster.Cluster
+	Expected *cluster.Cluster
+}
 
-// GetConfigCmd represents the apply command
-func GetConfigCmd() *cobra.Command {
-	var getConfigCmd = &cobra.Command{
-		Use:   "getconfig <NAME>",
-		Short: "Manage Kubernetes configuration",
-		Long: `Use this command to pull a kubeconfig file from a cluster so you can use kubectl.
-	
-	This command will attempt to find a cluster, and append a local kubeconfig file with a kubeconfig `,
+var exo = &ExplainOptions{}
+
+// ListCmd represents the list command
+func ExplainCmd() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:   "explain",
+		Short: "Explain cluster",
+		Long:  `Output expected and actual state of the given cluster`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
-				cro.Name = strEnvDef("KUBICORN_NAME", "")
+				exo.Name = strEnvDef("KUBICORN_NAME", "")
 			} else if len(args) > 1 {
 				logger.Critical("Too many arguments.")
 				os.Exit(1)
 			} else {
-				cro.Name = args[0]
+				exo.Name = args[0]
 			}
 
-			err := RunGetConfig(cro)
+			err := RunExplain(exo)
 			if err != nil {
 				logger.Critical(err.Error())
 				os.Exit(1)
 			}
-
 		},
 	}
 
-	getConfigCmd.Flags().StringVarP(&cro.StateStore, "state-store", "s", strEnvDef("KUBICORN_STATE_STORE", "fs"), "The state store type to use for the cluster")
-	getConfigCmd.Flags().StringVarP(&cro.StateStorePath, "state-store-path", "S", strEnvDef("KUBICORN_STATE_STORE_PATH", "./_state"), "The state store path to use")
-	getConfigCmd.Flags().StringVarP(&cro.GitRemote, "git-config", "g", strEnvDef("KUBICORN", "git"), "The git remote url to use")
+	cmd.Flags().StringVarP(&exo.StateStore, "state-store", "s", strEnvDef("KUBICORN_STATE_STORE", "fs"), "The state store type to use for the cluster")
+	cmd.Flags().StringVarP(&exo.StateStorePath, "state-store-path", "S", strEnvDef("KUBICORN_STATE_STORE_PATH", "./_state"), "The state store path to use")
+	cmd.Flags().StringVarP(&exo.Output, "output", "o", strEnvDef("KUBICORN_OUTPUT", "json"), "Output format (currently only JSON supported)")
 
-	return getConfigCmd
+	return cmd
 }
 
-func RunGetConfig(options *GetConfigOptions) error {
-
-	// Ensure we have SSH agent
-	agent := agent.NewAgent()
+func RunExplain(options *ExplainOptions) error {
 
 	// Ensure we have a name
 	name := options.Name
 	if name == "" {
-		return errors.New("Empty name. Must specify the name of the cluster to get config")
+		return errors.New("Empty name. Must specify the name of the cluster to apply")
 	}
 
 	// Expand state store path
@@ -89,13 +92,11 @@ func RunGetConfig(options *GetConfigOptions) error {
 	var stateStore state.ClusterStorer
 	switch options.StateStore {
 	case "fs":
-		logger.Info("Selected [fs] state store")
 		stateStore = fs.NewFileSystemStore(&fs.FileSystemStoreOptions{
 			BasePath:    options.StateStorePath,
 			ClusterName: name,
 		})
 	case "git":
-		logger.Info("Selected [git] state store")
 		if options.GitRemote == "" {
 			return errors.New("Empty GitRemote url. Must specify the link to the remote git repo.")
 		}
@@ -112,7 +113,6 @@ func RunGetConfig(options *GetConfigOptions) error {
 			},
 		})
 	case "jsonfs":
-		logger.Info("Selected [jsonfs] state store")
 		stateStore = jsonfs.NewJSONFileSystemStore(&jsonfs.JSONFileSystemStoreOptions{
 			BasePath:    options.StateStorePath,
 			ClusterName: name,
@@ -123,19 +123,42 @@ func RunGetConfig(options *GetConfigOptions) error {
 	if err != nil {
 		return fmt.Errorf("Unable to get cluster [%s]: %v", name, err)
 	}
-	logger.Info("Loaded cluster: %s", cluster.Name)
 
-	logger.Info("Init Cluster")
 	cluster, err = initapi.InitCluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	err = kubeconfig.GetConfig(cluster, agent)
-	if err != nil {
-		return err
+	runtimeParams := &cutil.RuntimeParameters{}
+
+	if len(ao.AwsProfile) > 0 {
+		runtimeParams.AwsProfile = ao.AwsProfile
 	}
-	logger.Always("Applied kubeconfig")
+
+	reconciler, err := cutil.GetReconciler(cluster, runtimeParams)
+	if err != nil {
+		return fmt.Errorf("Unable to get reconciler: %v", err)
+	}
+
+	var d OutputData
+	d.Actual, err = reconciler.Actual(cluster)
+	if err != nil {
+		return fmt.Errorf("Unable to get actual cluster: %v", err)
+	}
+	d.Expected, err = reconciler.Expected(cluster)
+	if err != nil {
+		return fmt.Errorf("Unable to get expected cluster: %v", err)
+	}
+
+	if exo.Output == "json" {
+		o, err := json.MarshalIndent(d, "", "\t")
+		if err != nil {
+			return fmt.Errorf("Unable to parse cluster: %v", err)
+		}
+		fmt.Printf("%s\n", o)
+	} else {
+		return fmt.Errorf("Unsupported output format")
+	}
 
 	return nil
 }
