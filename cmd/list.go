@@ -23,9 +23,9 @@ import (
 	"github.com/kris-nova/kubicorn/state/fs"
 	"github.com/kris-nova/kubicorn/state/git"
 	"github.com/kris-nova/kubicorn/state/jsonfs"
-	"github.com/spf13/cobra"
-	"github.com/minio/minio-go"
 	"github.com/kris-nova/kubicorn/state/s3"
+	"github.com/minio/minio-go"
+	"github.com/spf13/cobra"
 )
 
 type ListOptions struct {
@@ -101,11 +101,11 @@ func RunList(options *ListOptions) error {
 
 		logger.Info("Selected [s3] state store")
 		stateStore = s3.NewJSONFS3Store(&s3.JSONS3StoreOptions{
-			Client: client,
-			BasePath:    options.StateStorePath,
+			Client:   client,
+			BasePath: options.StateStorePath,
 			BucketOptions: &s3.S3BucketOptions{
-				EndpointURL: lo.BucketEndpointURL,
-				BucketName: lo.BucketName,
+				EndpointURL:    lo.BucketEndpointURL,
+				BucketName:     lo.BucketName,
 				BucketLocation: lo.BucketLocation,
 			},
 		})

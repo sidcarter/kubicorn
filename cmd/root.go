@@ -80,13 +80,13 @@ type Options struct {
 	Set            string
 	AwsProfile     string
 
-	GitRemote      string
+	GitRemote string
 
-	S3AccessKey string
-	S3SecretKey string
+	S3AccessKey       string
+	S3SecretKey       string
 	BucketEndpointURL string
-	BucketName string
-	BucketLocation string
+	BucketName        string
+	BucketLocation    string
 }
 
 func Execute() {

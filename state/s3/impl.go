@@ -143,7 +143,7 @@ func (fs *JSONFS3Store) List() ([]string, error) {
 
 	doneCh := make(chan struct{})
 	defer close(doneCh)
-	for object := range fs.Client.ListObjects(fs.BucketOptions.BucketName, "state/", false, doneCh) {
+	for object := range fs.Client.ListObjects(fs.BucketOptions.BucketName, fs.BasePath, false, doneCh) {
 		if object.Err != nil {
 			return stateList, object.Err
 		}

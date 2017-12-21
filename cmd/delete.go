@@ -26,11 +26,11 @@ import (
 	"github.com/kris-nova/kubicorn/state/fs"
 	"github.com/kris-nova/kubicorn/state/git"
 	"github.com/kris-nova/kubicorn/state/jsonfs"
+	"github.com/kris-nova/kubicorn/state/s3"
+	"github.com/minio/minio-go"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	gg "github.com/tcnksm/go-gitconfig"
-	"github.com/minio/minio-go"
-	"github.com/kris-nova/kubicorn/state/s3"
 )
 
 type DeleteOptions struct {
@@ -86,7 +86,6 @@ func DeleteCmd() *cobra.Command {
 	deleteCmd.Flags().StringVar(&do.BucketLocation, "s3-location", strEnvDef("KUBICORN_S3_LOCATION", ""), "The s3 bucket location.")
 	deleteCmd.Flags().StringVar(&do.BucketName, "s3-bucket", strEnvDef("KUBICORN_S3_BUCKET", ""), "The s3 bucket name to be used for saving the s3 state for the cluster.")
 
-
 	return deleteCmd
 }
 
@@ -140,12 +139,12 @@ func RunDelete(options *DeleteOptions) error {
 
 		logger.Info("Selected [s3] state store")
 		stateStore = s3.NewJSONFS3Store(&s3.JSONS3StoreOptions{
-			Client: client,
+			Client:      client,
 			BasePath:    options.StateStorePath,
 			ClusterName: name,
 			BucketOptions: &s3.S3BucketOptions{
-				EndpointURL: do.BucketEndpointURL,
-				BucketName: do.BucketName,
+				EndpointURL:    do.BucketEndpointURL,
+				BucketName:     do.BucketName,
 				BucketLocation: do.BucketLocation,
 			},
 		})
