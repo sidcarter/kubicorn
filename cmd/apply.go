@@ -146,8 +146,8 @@ func RunApply(options *ApplyOptions) error {
 			BasePath:    options.StateStorePath,
 			ClusterName: name,
 			BucketOptions: &s3.S3BucketOptions{
-				EndpointURL:    ao.BucketEndpointURL,
-				BucketName:     ao.BucketName,
+				EndpointURL: ao.BucketEndpointURL,
+				BucketName:  ao.BucketName,
 			},
 		})
 	}

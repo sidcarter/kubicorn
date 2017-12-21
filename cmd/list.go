@@ -104,8 +104,8 @@ func RunList(options *ListOptions) error {
 			Client:   client,
 			BasePath: options.StateStorePath,
 			BucketOptions: &s3.S3BucketOptions{
-				EndpointURL:    lo.BucketEndpointURL,
-				BucketName:     lo.BucketName,
+				EndpointURL: lo.BucketEndpointURL,
+				BucketName:  lo.BucketName,
 			},
 		})
 	}

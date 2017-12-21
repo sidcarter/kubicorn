@@ -130,8 +130,8 @@ func RunEdit(options *EditOptions) error {
 			BasePath:    options.StateStorePath,
 			ClusterName: name,
 			BucketOptions: &s3.S3BucketOptions{
-				EndpointURL:    eo.BucketEndpointURL,
-				BucketName:     eo.BucketName,
+				EndpointURL: eo.BucketEndpointURL,
+				BucketName:  eo.BucketName,
 			},
 		})
 	}

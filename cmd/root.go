@@ -85,7 +85,7 @@ type Options struct {
 	S3AccessKey       string
 	S3SecretKey       string
 	BucketEndpointURL string
-	BucketSSL	bool
+	BucketSSL         bool
 	BucketName        string
 }
 

@@ -46,14 +46,14 @@ func TestJsonFileSystem(t *testing.T) {
 		BasePath:    testFilePath,
 		ClusterName: c.Name,
 		BucketOptions: &S3BucketOptions{
-			EndpointURL:    "localhost:9000",
-			BucketName:     "test",
+			EndpointURL: "localhost:9000",
+			BucketName:  "test",
 		},
 	})
 
-	/*if err := s3.Destroy(); err != nil {
+	if err := s3store.Destroy(); err != nil {
 		t.Fatalf("Error destroying any existing state: %v", err)
-	}*/
+	}
 	if s3store.Exists() {
 		t.Fatalf("State shouldn't exist because we just destroyed it, but Exists() returned true")
 	}
@@ -77,8 +77,7 @@ func TestJsonFileSystem(t *testing.T) {
 	if !reflect.DeepEqual(read, c) {
 		t.Fatalf("Cluster in doesn't equal cluster out")
 	}
-	/*
-		if err = fs.Destroy(); err != nil {
-			t.Fatalf("Error cleaning up state: %v", err)
-		}*/
+	if err = s3store.Destroy(); err != nil {
+		t.Fatalf("Error cleaning up state: %v", err)
+	}
 }

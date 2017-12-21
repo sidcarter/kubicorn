@@ -140,8 +140,8 @@ func RunGetConfig(options *GetConfigOptions) error {
 			BasePath:    options.StateStorePath,
 			ClusterName: name,
 			BucketOptions: &s3.S3BucketOptions{
-				EndpointURL:    cro.BucketEndpointURL,
-				BucketName:     cro.BucketName,
+				EndpointURL: cro.BucketEndpointURL,
+				BucketName:  cro.BucketName,
 			},
 		})
 	}

@@ -143,8 +143,8 @@ func RunDelete(options *DeleteOptions) error {
 			BasePath:    options.StateStorePath,
 			ClusterName: name,
 			BucketOptions: &s3.S3BucketOptions{
-				EndpointURL:    do.BucketEndpointURL,
-				BucketName:     do.BucketName,
+				EndpointURL: do.BucketEndpointURL,
+				BucketName:  do.BucketName,
 			},
 		})
 	}

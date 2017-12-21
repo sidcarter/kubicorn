@@ -246,8 +246,8 @@ func RunCreate(options *CreateOptions) error {
 			BasePath:    options.StateStorePath,
 			ClusterName: name,
 			BucketOptions: &s3.S3BucketOptions{
-				EndpointURL:    co.BucketEndpointURL,
-				BucketName:     co.BucketName,
+				EndpointURL: co.BucketEndpointURL,
+				BucketName:  co.BucketName,
 			},
 		})
 	}

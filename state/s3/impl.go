@@ -35,8 +35,8 @@ type JSONS3StoreOptions struct {
 }
 
 type S3BucketOptions struct {
-	EndpointURL    string
-	BucketName     string
+	EndpointURL string
+	BucketName  string
 }
 
 // JSONFS3 exists to save the cluster at runtime to the file defined
@@ -110,13 +110,45 @@ func (fs *JSONFS3Store) Commit(c *cluster.Cluster) error {
 }
 
 func (fs *JSONFS3Store) Rename(existingRelativePath, newRelativePath string) error {
-	return fmt.Errorf("Not implemented")
+	src := minio.NewSourceInfo(fs.BucketOptions.BucketName, existingRelativePath, nil)
+	dst, err := minio.NewDestinationInfo(fs.BucketOptions.BucketName, newRelativePath, nil, nil)
+	if err != nil {
+		return err
+	}
+
+	err = fs.Client.CopyObject(dst, src)
+	if err != nil {
+		return err
+	}
+
+	err = fs.Client.RemoveObject(fs.BucketOptions.BucketName, existingRelativePath)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-// DOESN'T WORK
 func (fs *JSONFS3Store) Destroy() error {
+	var err error
 	logger.Warning("Removing path [%s]", fs.AbsolutePath)
-	return fs.Client.RemoveObject(fs.options.BucketOptions.BucketName, "state/test")
+
+	objectsCh := make(chan string)
+	go func() {
+		defer close(objectsCh)
+		for object := range fs.Client.ListObjects(fs.BucketOptions.BucketName, fs.AbsolutePath, true, nil) {
+			if object.Err != nil {
+				err = fmt.Errorf("Error encountered while listing objects: %#v", object.Err)
+			}
+			objectsCh <- object.Key
+		}
+	}()
+
+	for rErr := range fs.Client.RemoveObjects(fs.BucketOptions.BucketName, objectsCh) {
+		err = fmt.Errorf("Error detected during deletion: %#v", rErr)
+	}
+
+	return err
 }
 
 func (fs *JSONFS3Store) GetCluster() (*cluster.Cluster, error) {
@@ -142,7 +174,7 @@ func (fs *JSONFS3Store) List() ([]string, error) {
 
 	doneCh := make(chan struct{})
 	defer close(doneCh)
-	for object := range fs.Client.ListObjects(fs.BucketOptions.BucketName, fs.BasePath, false, doneCh) {
+	for object := range fs.Client.ListObjects(fs.BucketOptions.BucketName, filepath.Base(fs.BasePath)+"/", false, doneCh) {
 		if object.Err != nil {
 			return stateList, object.Err
 		}
