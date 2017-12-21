@@ -29,6 +29,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	gg "github.com/tcnksm/go-gitconfig"
+	"github.com/minio/minio-go"
+	"github.com/kris-nova/kubicorn/state/s3"
 )
 
 type DeleteOptions struct {
@@ -72,8 +74,18 @@ func DeleteCmd() *cobra.Command {
 	deleteCmd.Flags().StringVarP(&do.StateStore, "state-store", "s", strEnvDef("KUBICORN_STATE_STORE", "fs"), "The state store type to use for the cluster")
 	deleteCmd.Flags().StringVarP(&do.StateStorePath, "state-store-path", "S", strEnvDef("KUBICORN_STATE_STORE_PATH", "./_state"), "The state store path to use")
 	deleteCmd.Flags().BoolVarP(&do.Purge, "purge", "p", false, "Remove the API model from the state store after the resources are deleted.")
-	deleteCmd.Flags().StringVar(&ao.AwsProfile, "aws-profile", strEnvDef("KUBICORN_AWS_PROFILE", ""), "The profile to be used as defined in $HOME/.aws/credentials")
-	deleteCmd.Flags().StringVar(&ao.GitRemote, "git-config", strEnvDef("KUBICORN_GIT_CONFIG", "git"), "The git remote url to use")
+	deleteCmd.Flags().StringVar(&do.AwsProfile, "aws-profile", strEnvDef("KUBICORN_AWS_PROFILE", ""), "The profile to be used as defined in $HOME/.aws/credentials")
+
+	// git flags
+	deleteCmd.Flags().StringVar(&do.GitRemote, "git-config", strEnvDef("KUBICORN_GIT_CONFIG", "git"), "The git remote url to use")
+
+	// s3 flags
+	deleteCmd.Flags().StringVar(&do.S3AccessKey, "s3-access", strEnvDef("KUBICORN_S3_ACCESS_KEY", ""), "The s3 access key.")
+	deleteCmd.Flags().StringVar(&do.S3SecretKey, "s3-secret", strEnvDef("KUBICORN_S3_SECRET_KEY", ""), "The s3 secret key.")
+	deleteCmd.Flags().StringVar(&do.BucketEndpointURL, "s3-endpoint", strEnvDef("KUBICORN_S3_ENDPOINT", ""), "The s3 endpoint url.")
+	deleteCmd.Flags().StringVar(&do.BucketLocation, "s3-location", strEnvDef("KUBICORN_S3_LOCATION", ""), "The s3 bucket location.")
+	deleteCmd.Flags().StringVar(&do.BucketName, "s3-bucket", strEnvDef("KUBICORN_S3_BUCKET", ""), "The s3 bucket name to be used for saving the s3 state for the cluster.")
+
 
 	return deleteCmd
 }
@@ -120,6 +132,23 @@ func RunDelete(options *DeleteOptions) error {
 			BasePath:    options.StateStorePath,
 			ClusterName: name,
 		})
+	case "s3":
+		client, err := minio.New(do.BucketEndpointURL, do.S3AccessKey, do.S3SecretKey, true)
+		if err != nil {
+			return err
+		}
+
+		logger.Info("Selected [s3] state store")
+		stateStore = s3.NewJSONFS3Store(&s3.JSONS3StoreOptions{
+			Client: client,
+			BasePath:    options.StateStorePath,
+			ClusterName: name,
+			BucketOptions: &s3.S3BucketOptions{
+				EndpointURL: do.BucketEndpointURL,
+				BucketName: do.BucketName,
+				BucketLocation: do.BucketLocation,
+			},
+		})
 	}
 
 	if !stateStore.Exists() {
@@ -134,8 +163,8 @@ func RunDelete(options *DeleteOptions) error {
 
 	runtimeParams := &cutil.RuntimeParameters{}
 
-	if len(ao.AwsProfile) > 0 {
-		runtimeParams.AwsProfile = ao.AwsProfile
+	if len(do.AwsProfile) > 0 {
+		runtimeParams.AwsProfile = do.AwsProfile
 	}
 
 	reconciler, err := cutil.GetReconciler(expectedCluster, runtimeParams)

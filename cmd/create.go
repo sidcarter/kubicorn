@@ -37,6 +37,8 @@ import (
 	"github.com/spf13/cobra"
 	gg "github.com/tcnksm/go-gitconfig"
 	"github.com/yuroyoro/swalker"
+	"github.com/minio/minio-go"
+	"github.com/kris-nova/kubicorn/state/s3"
 )
 
 type CreateOptions struct {
@@ -80,7 +82,16 @@ func CreateCmd() *cobra.Command {
 	createCmd.Flags().StringVarP(&co.Profile, "profile", "p", strEnvDef("KUBICORN_PROFILE", "azure"), "The cluster profile to use")
 	createCmd.Flags().StringVarP(&co.CloudId, "cloudid", "c", strEnvDef("KUBICORN_CLOUDID", ""), "The cloud id")
 	createCmd.Flags().StringVarP(&co.Set, "set", "e", strEnvDef("KUBICORN_SET", ""), "set cluster setting")
+
+	// git flags
 	createCmd.Flags().StringVarP(&co.GitRemote, "git-config", "g", strEnvDef("KUBICORN_GIT_CONFIG", "git"), "The git remote url to use")
+
+	// s3 flags
+	createCmd.Flags().StringVar(&co.S3AccessKey, "s3-access", strEnvDef("KUBICORN_S3_ACCESS_KEY", ""), "The s3 access key.")
+	createCmd.Flags().StringVar(&co.S3SecretKey, "s3-secret", strEnvDef("KUBICORN_S3_SECRET_KEY", ""), "The s3 secret key.")
+	createCmd.Flags().StringVar(&co.BucketEndpointURL, "s3-endpoint", strEnvDef("KUBICORN_S3_ENDPOINT", ""), "The s3 endpoint url.")
+	createCmd.Flags().StringVar(&co.BucketLocation, "s3-location", strEnvDef("KUBICORN_S3_LOCATION", ""), "The s3 bucket location.")
+	createCmd.Flags().StringVar(&co.BucketName, "s3-bucket", strEnvDef("KUBICORN_S3_BUCKET", ""), "The s3 bucket name to be used for saving the s3 state for the cluster.")
 
 	flagApplyAnnotations(createCmd, "profile", "__kubicorn_parse_profiles")
 	flagApplyAnnotations(createCmd, "cloudid", "__kubicorn_parse_cloudid")
@@ -222,6 +233,23 @@ func RunCreate(options *CreateOptions) error {
 		stateStore = jsonfs.NewJSONFileSystemStore(&jsonfs.JSONFileSystemStoreOptions{
 			BasePath:    options.StateStorePath,
 			ClusterName: name,
+		})
+	case "s3":
+		client, err := minio.New(co.BucketEndpointURL, co.S3AccessKey, co.S3SecretKey, true)
+		if err != nil {
+			return err
+		}
+
+		logger.Info("Selected [s3] state store")
+		stateStore = s3.NewJSONFS3Store(&s3.JSONS3StoreOptions{
+			Client: client,
+			BasePath:    options.StateStorePath,
+			ClusterName: name,
+			BucketOptions: &s3.S3BucketOptions{
+				EndpointURL: co.BucketEndpointURL,
+				BucketName: co.BucketName,
+				BucketLocation: co.BucketLocation,
+			},
 		})
 	}
 

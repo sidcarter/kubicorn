@@ -32,6 +32,8 @@ import (
 	"github.com/spf13/cobra"
 	gg "github.com/tcnksm/go-gitconfig"
 	"github.com/yuroyoro/swalker"
+	"github.com/minio/minio-go"
+	"github.com/kris-nova/kubicorn/state/s3"
 )
 
 type ApplyOptions struct {
@@ -72,7 +74,16 @@ func ApplyCmd() *cobra.Command {
 	applyCmd.Flags().StringVarP(&ao.StateStorePath, "state-store-path", "S", strEnvDef("KUBICORN_STATE_STORE_PATH", "./_state"), "The state store path to use")
 	applyCmd.Flags().StringVarP(&ao.Set, "set", "e", strEnvDef("KUBICORN_SET", ""), "set cluster setting")
 	applyCmd.Flags().StringVar(&ao.AwsProfile, "aws-profile", strEnvDef("KUBICORN_AWS_PROFILE", ""), "The profile to be used as defined in $HOME/.aws/credentials")
+
+	// git flags
 	applyCmd.Flags().StringVar(&ao.GitRemote, "git-config", strEnvDef("KUBICORN_GIT_CONFIG", "git"), "The git remote url to be used for saving the git state for the cluster.")
+
+	// s3 flags
+	applyCmd.Flags().StringVar(&ao.S3AccessKey, "s3-access", strEnvDef("KUBICORN_S3_ACCESS_KEY", ""), "The s3 access key.")
+	applyCmd.Flags().StringVar(&ao.S3SecretKey, "s3-secret", strEnvDef("KUBICORN_S3_SECRET_KEY", ""), "The s3 secret key.")
+	applyCmd.Flags().StringVar(&ao.BucketEndpointURL, "s3-endpoint", strEnvDef("KUBICORN_S3_ENDPOINT", ""), "The s3 endpoint url.")
+	applyCmd.Flags().StringVar(&ao.BucketName, "s3-bucket", strEnvDef("KUBICORN_GIT_BUCKET", ""), "The s3 bucket name to be used for saving the git state for the cluster.")
+	applyCmd.Flags().StringVar(&ao.BucketLocation, "s3-location", strEnvDef("KUBICORN_GIT_LOCATION", ""), "The s3 bucket location.")
 
 	return applyCmd
 }
@@ -122,6 +133,23 @@ func RunApply(options *ApplyOptions) error {
 		stateStore = jsonfs.NewJSONFileSystemStore(&jsonfs.JSONFileSystemStoreOptions{
 			BasePath:    options.StateStorePath,
 			ClusterName: name,
+		})
+	case "s3":
+		client, err := minio.New(ao.BucketEndpointURL, ao.S3AccessKey, ao.S3SecretKey, true)
+		if err != nil {
+			return err
+		}
+
+		logger.Info("Selected [s3] state store")
+		stateStore = s3.NewJSONFS3Store(&s3.JSONS3StoreOptions{
+			Client: client,
+			BasePath:    options.StateStorePath,
+			ClusterName: name,
+			BucketOptions: &s3.S3BucketOptions{
+				EndpointURL: ao.BucketEndpointURL,
+				BucketName: ao.BucketName,
+				BucketLocation: ao.BucketLocation,
+			},
 		})
 	}
 

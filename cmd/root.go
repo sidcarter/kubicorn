@@ -79,7 +79,14 @@ type Options struct {
 	CloudId        string
 	Set            string
 	AwsProfile     string
+
 	GitRemote      string
+
+	S3AccessKey string
+	S3SecretKey string
+	BucketEndpointURL string
+	BucketName string
+	BucketLocation string
 }
 
 func Execute() {
