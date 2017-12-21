@@ -83,7 +83,7 @@ func DeleteCmd() *cobra.Command {
 	deleteCmd.Flags().StringVar(&do.S3AccessKey, "s3-access", strEnvDef("KUBICORN_S3_ACCESS_KEY", ""), "The s3 access key.")
 	deleteCmd.Flags().StringVar(&do.S3SecretKey, "s3-secret", strEnvDef("KUBICORN_S3_SECRET_KEY", ""), "The s3 secret key.")
 	deleteCmd.Flags().StringVar(&do.BucketEndpointURL, "s3-endpoint", strEnvDef("KUBICORN_S3_ENDPOINT", ""), "The s3 endpoint url.")
-	deleteCmd.Flags().StringVar(&do.BucketLocation, "s3-location", strEnvDef("KUBICORN_S3_LOCATION", ""), "The s3 bucket location.")
+	deleteCmd.Flags().BoolVar(&do.BucketSSL, "s3-ssl", boolEnvDef("KUBICORN_S3_BUCKET", true), "The s3 bucket name to be used for saving the git state for the cluster.")
 	deleteCmd.Flags().StringVar(&do.BucketName, "s3-bucket", strEnvDef("KUBICORN_S3_BUCKET", ""), "The s3 bucket name to be used for saving the s3 state for the cluster.")
 
 	return deleteCmd
@@ -132,7 +132,7 @@ func RunDelete(options *DeleteOptions) error {
 			ClusterName: name,
 		})
 	case "s3":
-		client, err := minio.New(do.BucketEndpointURL, do.S3AccessKey, do.S3SecretKey, true)
+		client, err := minio.New(do.BucketEndpointURL, do.S3AccessKey, do.S3SecretKey, do.BucketSSL)
 		if err != nil {
 			return err
 		}
@@ -145,7 +145,6 @@ func RunDelete(options *DeleteOptions) error {
 			BucketOptions: &s3.S3BucketOptions{
 				EndpointURL:    do.BucketEndpointURL,
 				BucketName:     do.BucketName,
-				BucketLocation: do.BucketLocation,
 			},
 		})
 	}

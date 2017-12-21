@@ -82,8 +82,8 @@ func ApplyCmd() *cobra.Command {
 	applyCmd.Flags().StringVar(&ao.S3AccessKey, "s3-access", strEnvDef("KUBICORN_S3_ACCESS_KEY", ""), "The s3 access key.")
 	applyCmd.Flags().StringVar(&ao.S3SecretKey, "s3-secret", strEnvDef("KUBICORN_S3_SECRET_KEY", ""), "The s3 secret key.")
 	applyCmd.Flags().StringVar(&ao.BucketEndpointURL, "s3-endpoint", strEnvDef("KUBICORN_S3_ENDPOINT", ""), "The s3 endpoint url.")
-	applyCmd.Flags().StringVar(&ao.BucketName, "s3-bucket", strEnvDef("KUBICORN_GIT_BUCKET", ""), "The s3 bucket name to be used for saving the git state for the cluster.")
-	applyCmd.Flags().StringVar(&ao.BucketLocation, "s3-location", strEnvDef("KUBICORN_GIT_LOCATION", ""), "The s3 bucket location.")
+	applyCmd.Flags().BoolVar(&ao.BucketSSL, "s3-ssl", boolEnvDef("KUBICORN_S3_BUCKET", true), "The s3 bucket name to be used for saving the git state for the cluster.")
+	applyCmd.Flags().StringVar(&ao.BucketName, "s3-bucket", strEnvDef("KUBICORN_S3_BUCKET", ""), "The s3 bucket name to be used for saving the git state for the cluster.")
 
 	return applyCmd
 }
@@ -135,7 +135,7 @@ func RunApply(options *ApplyOptions) error {
 			ClusterName: name,
 		})
 	case "s3":
-		client, err := minio.New(ao.BucketEndpointURL, ao.S3AccessKey, ao.S3SecretKey, true)
+		client, err := minio.New(ao.BucketEndpointURL, ao.S3AccessKey, ao.S3SecretKey, ao.BucketSSL)
 		if err != nil {
 			return err
 		}
@@ -148,7 +148,6 @@ func RunApply(options *ApplyOptions) error {
 			BucketOptions: &s3.S3BucketOptions{
 				EndpointURL:    ao.BucketEndpointURL,
 				BucketName:     ao.BucketName,
-				BucketLocation: ao.BucketLocation,
 			},
 		})
 	}

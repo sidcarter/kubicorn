@@ -90,7 +90,7 @@ func CreateCmd() *cobra.Command {
 	createCmd.Flags().StringVar(&co.S3AccessKey, "s3-access", strEnvDef("KUBICORN_S3_ACCESS_KEY", ""), "The s3 access key.")
 	createCmd.Flags().StringVar(&co.S3SecretKey, "s3-secret", strEnvDef("KUBICORN_S3_SECRET_KEY", ""), "The s3 secret key.")
 	createCmd.Flags().StringVar(&co.BucketEndpointURL, "s3-endpoint", strEnvDef("KUBICORN_S3_ENDPOINT", ""), "The s3 endpoint url.")
-	createCmd.Flags().StringVar(&co.BucketLocation, "s3-location", strEnvDef("KUBICORN_S3_LOCATION", ""), "The s3 bucket location.")
+	createCmd.Flags().BoolVar(&co.BucketSSL, "s3-ssl", boolEnvDef("KUBICORN_S3_BUCKET", true), "The s3 bucket name to be used for saving the git state for the cluster.")
 	createCmd.Flags().StringVar(&co.BucketName, "s3-bucket", strEnvDef("KUBICORN_S3_BUCKET", ""), "The s3 bucket name to be used for saving the s3 state for the cluster.")
 
 	flagApplyAnnotations(createCmd, "profile", "__kubicorn_parse_profiles")
@@ -235,7 +235,7 @@ func RunCreate(options *CreateOptions) error {
 			ClusterName: name,
 		})
 	case "s3":
-		client, err := minio.New(co.BucketEndpointURL, co.S3AccessKey, co.S3SecretKey, true)
+		client, err := minio.New(co.BucketEndpointURL, co.S3AccessKey, co.S3SecretKey, co.BucketSSL)
 		if err != nil {
 			return err
 		}
@@ -248,7 +248,6 @@ func RunCreate(options *CreateOptions) error {
 			BucketOptions: &s3.S3BucketOptions{
 				EndpointURL:    co.BucketEndpointURL,
 				BucketName:     co.BucketName,
-				BucketLocation: co.BucketLocation,
 			},
 		})
 	}

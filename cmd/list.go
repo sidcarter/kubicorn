@@ -60,7 +60,7 @@ func ListCmd() *cobra.Command {
 	cmd.Flags().StringVar(&lo.S3AccessKey, "s3-access", strEnvDef("KUBICORN_S3_ACCESS_KEY", ""), "The s3 access key.")
 	cmd.Flags().StringVar(&lo.S3SecretKey, "s3-secret", strEnvDef("KUBICORN_S3_SECRET_KEY", ""), "The s3 secret key.")
 	cmd.Flags().StringVar(&lo.BucketEndpointURL, "s3-endpoint", strEnvDef("KUBICORN_S3_ENDPOINT", ""), "The s3 endpoint url.")
-	cmd.Flags().StringVar(&lo.BucketLocation, "s3-location", strEnvDef("KUBICORN_S3_LOCATION", ""), "The s3 bucket location.")
+	cmd.Flags().BoolVar(&lo.BucketSSL, "s3-ssl", boolEnvDef("KUBICORN_S3_BUCKET", true), "The s3 bucket name to be used for saving the git state for the cluster.")
 	cmd.Flags().StringVar(&lo.BucketName, "s3-bucket", strEnvDef("KUBICORN_S3_BUCKET", ""), "The s3 bucket name to be used for saving the s3 state for the cluster.")
 
 	return cmd
@@ -94,7 +94,7 @@ func RunList(options *ListOptions) error {
 			BasePath: options.StateStorePath,
 		})
 	case "s3":
-		client, err := minio.New(lo.BucketEndpointURL, lo.S3AccessKey, lo.S3SecretKey, true)
+		client, err := minio.New(lo.BucketEndpointURL, lo.S3AccessKey, lo.S3SecretKey, lo.BucketSSL)
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,6 @@ func RunList(options *ListOptions) error {
 			BucketOptions: &s3.S3BucketOptions{
 				EndpointURL:    lo.BucketEndpointURL,
 				BucketName:     lo.BucketName,
-				BucketLocation: lo.BucketLocation,
 			},
 		})
 	}

@@ -37,7 +37,6 @@ type JSONS3StoreOptions struct {
 type S3BucketOptions struct {
 	EndpointURL    string
 	BucketName     string
-	BucketLocation string
 }
 
 // JSONFS3 exists to save the cluster at runtime to the file defined

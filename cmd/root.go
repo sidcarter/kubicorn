@@ -85,8 +85,8 @@ type Options struct {
 	S3AccessKey       string
 	S3SecretKey       string
 	BucketEndpointURL string
+	BucketSSL	bool
 	BucketName        string
-	BucketLocation    string
 }
 
 func Execute() {

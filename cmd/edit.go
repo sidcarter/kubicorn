@@ -76,7 +76,7 @@ func EditCmd() *cobra.Command {
 	editCmd.Flags().StringVar(&eo.S3AccessKey, "s3-access", strEnvDef("KUBICORN_S3_ACCESS_KEY", ""), "The s3 access key.")
 	editCmd.Flags().StringVar(&eo.S3SecretKey, "s3-secret", strEnvDef("KUBICORN_S3_SECRET_KEY", ""), "The s3 secret key.")
 	editCmd.Flags().StringVar(&eo.BucketEndpointURL, "s3-endpoint", strEnvDef("KUBICORN_S3_ENDPOINT", ""), "The s3 endpoint url.")
-	editCmd.Flags().StringVar(&eo.BucketLocation, "s3-location", strEnvDef("KUBICORN_S3_LOCATION", ""), "The s3 bucket location.")
+	editCmd.Flags().BoolVar(&eo.BucketSSL, "s3-ssl", boolEnvDef("KUBICORN_S3_BUCKET", true), "The s3 bucket name to be used for saving the git state for the cluster.")
 	editCmd.Flags().StringVar(&eo.BucketName, "s3-bucket", strEnvDef("KUBICORN_S3_BUCKET", ""), "The s3 bucket name to be used for saving the s3 state for the cluster.")
 
 	return editCmd
@@ -119,7 +119,7 @@ func RunEdit(options *EditOptions) error {
 			ClusterName: name,
 		})
 	case "s3":
-		client, err := minio.New(eo.BucketEndpointURL, eo.S3AccessKey, eo.S3SecretKey, true)
+		client, err := minio.New(eo.BucketEndpointURL, eo.S3AccessKey, eo.S3SecretKey, eo.BucketSSL)
 		if err != nil {
 			return err
 		}
@@ -132,7 +132,6 @@ func RunEdit(options *EditOptions) error {
 			BucketOptions: &s3.S3BucketOptions{
 				EndpointURL:    eo.BucketEndpointURL,
 				BucketName:     eo.BucketName,
-				BucketLocation: eo.BucketLocation,
 			},
 		})
 	}

@@ -48,7 +48,6 @@ func TestJsonFileSystem(t *testing.T) {
 		BucketOptions: &S3BucketOptions{
 			EndpointURL:    "localhost:9000",
 			BucketName:     "test",
-			BucketLocation: "",
 		},
 	})
 
