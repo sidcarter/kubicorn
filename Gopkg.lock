@@ -56,6 +56,12 @@
   version = "v1.1.1"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/dustin/go-humanize"
+  packages = ["."]
+  revision = "bb3d318650d48840a39aa21a027c6630e198e626"
+
+[[projects]]
   name = "github.com/emicklei/go-restful"
   packages = [".","log"]
   revision = "5741799b275a3c4a5a9623a993576d7545cf7b5c"
@@ -187,6 +193,18 @@
   version = "v0.0.3"
 
 [[projects]]
+  name = "github.com/minio/minio-go"
+  packages = [".","pkg/credentials","pkg/encrypt","pkg/policy","pkg/s3signer","pkg/s3utils","pkg/set"]
+  revision = "06dcf064d9e3b1dfd21b9a01a822da7665a9c971"
+  version = "4.0.4"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/go-homedir"
+  packages = ["."]
+  revision = "b8bc1bf767474819792c23f32d8286a45736f1c6"
+
+[[projects]]
   name = "github.com/packethost/packngo"
   packages = ["."]
   revision = "131798f2804a1b3e895ca98047d56f0d7e094e2a"
@@ -215,6 +233,12 @@
   name = "github.com/sergi/go-diff"
   packages = ["diffmatchpatch"]
   revision = "1744e2970ca51c86172c8190fadad617561ed6e7"
+
+[[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
+  version = "v1.0.4"
 
 [[projects]]
   branch = "master"
@@ -333,6 +357,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "909a87a76d9b33f0bcffc5122367bead20130f24a39897313a9bce385baa7060"
+  inputs-digest = "cb9e324d036a0fc26410c3e1d318974e5773487be4af9e1b91ef2c1d51219335"
   solver-name = "gps-cdcl"
   solver-version = 1
