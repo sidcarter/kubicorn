@@ -76,7 +76,7 @@ func GetConfigCmd() *cobra.Command {
 	getConfigCmd.Flags().StringVar(&cro.S3AccessKey, "s3-access", strEnvDef("KUBICORN_S3_ACCESS_KEY", ""), "The s3 access key.")
 	getConfigCmd.Flags().StringVar(&cro.S3SecretKey, "s3-secret", strEnvDef("KUBICORN_S3_SECRET_KEY", ""), "The s3 secret key.")
 	getConfigCmd.Flags().StringVar(&cro.BucketEndpointURL, "s3-endpoint", strEnvDef("KUBICORN_S3_ENDPOINT", ""), "The s3 endpoint url.")
-	getConfigCmd.Flags().BoolVar(&cro.BucketSSL, "s3-ssl", boolEnvDef("KUBICORN_S3_BUCKET", true), "The s3 bucket name to be used for saving the git state for the cluster.")
+	getConfigCmd.Flags().BoolVar(&cro.BucketSSL, "s3-ssl", boolEnvDef("KUBICORN_S3_SSL", true), "The s3 bucket name to be used for saving the git state for the cluster.")
 	getConfigCmd.Flags().StringVar(&cro.BucketName, "s3-bucket", strEnvDef("KUBICORN_S3_BUCKET", ""), "The s3 bucket name to be used for saving the s3 state for the cluster.")
 
 	return getConfigCmd

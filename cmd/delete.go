@@ -83,7 +83,7 @@ func DeleteCmd() *cobra.Command {
 	deleteCmd.Flags().StringVar(&do.S3AccessKey, "s3-access", strEnvDef("KUBICORN_S3_ACCESS_KEY", ""), "The s3 access key.")
 	deleteCmd.Flags().StringVar(&do.S3SecretKey, "s3-secret", strEnvDef("KUBICORN_S3_SECRET_KEY", ""), "The s3 secret key.")
 	deleteCmd.Flags().StringVar(&do.BucketEndpointURL, "s3-endpoint", strEnvDef("KUBICORN_S3_ENDPOINT", ""), "The s3 endpoint url.")
-	deleteCmd.Flags().BoolVar(&do.BucketSSL, "s3-ssl", boolEnvDef("KUBICORN_S3_BUCKET", true), "The s3 bucket name to be used for saving the git state for the cluster.")
+	deleteCmd.Flags().BoolVar(&do.BucketSSL, "s3-ssl", boolEnvDef("KUBICORN_S3_SSL", true), "The s3 bucket name to be used for saving the git state for the cluster.")
 	deleteCmd.Flags().StringVar(&do.BucketName, "s3-bucket", strEnvDef("KUBICORN_S3_BUCKET", ""), "The s3 bucket name to be used for saving the s3 state for the cluster.")
 
 	return deleteCmd
