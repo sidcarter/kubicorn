@@ -27,6 +27,8 @@ func NewCentosCluster(name string) *cluster.Cluster {
 		Name:     name,
 		Cloud:    cluster.CloudDigitalOcean,
 		Location: "sfo2",
+		KubernetesVersion: "1.9.0-00",
+		KubernetesCNIVersion: "0.6.0-00",
 		SSH: &cluster.SSH{
 			PublicKeyPath: "~/.ssh/id_rsa.pub",
 			User:          "root",

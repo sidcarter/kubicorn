@@ -26,6 +26,8 @@ func NewUbuntuCluster(name string) *cluster.Cluster {
 	return &cluster.Cluster{
 		Name:  name,
 		Cloud: cluster.CloudPacket,
+		KubernetesVersion: "1.9.0-00",
+		KubernetesCNIVersion: "0.6.0-00",
 		Project: &cluster.Project{
 			Name: fmt.Sprintf("kubicorn-%s", name),
 		},

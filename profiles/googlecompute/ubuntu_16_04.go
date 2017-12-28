@@ -28,6 +28,8 @@ func NewUbuntuCluster(name string) *cluster.Cluster {
 		CloudId:  "example-id",
 		Cloud:    cluster.CloudGoogle,
 		Location: "us-central1-a",
+		KubernetesVersion: "1.9.0-00",
+		KubernetesCNIVersion: "0.6.0-00",
 		SSH: &cluster.SSH{
 			PublicKeyPath: "~/.ssh/id_rsa.pub",
 			User:          "ubuntu",

@@ -41,6 +41,8 @@ type Cluster struct {
 	Values            *Values        `json:"values,omitempty"`
 	KubernetesAPI     *KubernetesAPI `json:"kubernetesAPI,omitempty"`
 	GroupIdentifier   string         `json:"groupIdentifier,omitempty"`
+	KubernetesVersion	string	`json:"kubernetesVersion,omitempty"`
+	KubernetesCNIVersion	string	`json:"kubernetesCNIVersion,omitempty"`
 }
 
 func NewCluster(name string) *Cluster {
